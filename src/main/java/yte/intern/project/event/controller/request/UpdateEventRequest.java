@@ -6,6 +6,7 @@ import lombok.experimental.Accessors;
 import yte.intern.project.event.entity.Event;
 
 import javax.validation.constraints.FutureOrPresent;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
@@ -25,8 +26,10 @@ public class UpdateEventRequest {
     @FutureOrPresent
     private final LocalDate eventFinishDate;
 
+    @Max(5)
+    private final Integer eventQuota;
 
     public Event toEvent() {
-        return new Event(eventName, eventStartDate, eventFinishDate);
+        return new Event(eventName, eventStartDate, eventFinishDate, eventQuota);
     }
 }
