@@ -52,6 +52,8 @@ public class EventService {
                 .orElseThrow(() -> new EntityNotFoundException(EVENT_DOES_NOT_EXIST_MESSAGE.formatted(id)));
         if(!isStartDateEarlierThanFinishDate(updatedEvent.eventStartDate(), updatedEvent.eventFinishDate()))
             return new MessageResponse(MessageType.ERROR, dateErrorMessage(updatedEvent.eventStartDate(), updatedEvent.eventFinishDate()));
+        /*if(eventFromDB.eventStartDate().isBefore(LocalDate.now()))
+            return new MessageResponse(MessageType.ERROR, "Start date cannot be earlier than today");*/
         eventFromDB.updateEvent(updatedEvent);
         eventRepository.save(eventFromDB);
         return new MessageResponse(MessageType.SUCCESS, eventUpdatedMessage(id));
@@ -65,6 +67,9 @@ public class EventService {
     public MessageResponse deleteEvent(Long id) {
         if(!eventRepository.existsById(id))
             return new MessageResponse(MessageType.ERROR, EVENT_DOES_NOT_EXIST_MESSAGE.formatted(id));
+        Event eventFromDB = eventRepository.findById(id).get();
+        if(eventFromDB.eventStartDate().isBefore(LocalDate.now()))
+            return new MessageResponse(MessageType.ERROR, "Start date cannot be earlier than today");
         eventRepository.deleteById(id);
         return new MessageResponse(MessageType.SUCCESS, EVENT_DELETED_MESSAGE.formatted(id));
     }

@@ -10,6 +10,4 @@ import yte.intern.project.common.enums.MessageType;
 public class MessageResponse {
     private final MessageType messageType;
     private final String message;
-
-
 }

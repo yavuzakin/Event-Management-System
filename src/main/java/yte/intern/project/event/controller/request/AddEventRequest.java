@@ -21,10 +21,10 @@ public class AddEventRequest {
     @FutureOrPresent(message = "Must be a present or a future date")
     private final LocalDate eventStartDate;
 
-    @FutureOrPresent
+    @FutureOrPresent(message = "Must be a present or a future date")
     private final LocalDate eventFinishDate;
 
-    @Max(5)
+    @Max(value = 5, message = "Event quota cannot be higher than 5")
     private final Integer eventQuota;
 
     public Event toEvent() {
