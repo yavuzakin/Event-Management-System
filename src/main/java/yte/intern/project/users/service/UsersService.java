@@ -9,6 +9,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import yte.intern.project.common.dto.MessageResponse;
 import yte.intern.project.common.enums.MessageType;
+import yte.intern.project.event.controller.request.AddEventRequest;
+import yte.intern.project.event.controller.response.EventQueryResponse;
 import yte.intern.project.event.entity.Event;
 import yte.intern.project.event.repository.EventRepository;
 import yte.intern.project.security.domain.Authority;
@@ -49,12 +51,13 @@ public class UsersService {
     }
 
 
-    public List<Event> getAllEvents() {
+    public List<EventQueryResponse> getAllEvents() {
         return eventRepository.findAll()
                 .stream()
                 .filter(event -> {
                     return event.eventStartDate().isAfter(LocalDate.now());
                 })
+                .map(EventQueryResponse::new)
                 .toList();
     }
 
@@ -71,9 +74,9 @@ public class UsersService {
         Authority userAuthority = authorityRepository.findByAuthority("USER");
 
         if(registerRequest.userType() == UserType.USER) {
-            usersRepository.save(Users.toUser(registerRequest, Set.of(userAuthority)));
+            usersRepository.save(Users.toUser(registerRequest, Set.of(userAuthority), Set.of()));
         } else if(registerRequest.userType() == UserType.ADMIN) {
-            usersRepository.save(Users.toUser(registerRequest, Set.of(adminAuthority, userAuthority)));
+            usersRepository.save(Users.toUser(registerRequest, Set.of(adminAuthority, userAuthority), Set.of()));
         }
 
         return new MessageResponse(MessageType.SUCCESS, "User %s has been registered successfully.".formatted(registerRequest.username()));
@@ -89,6 +92,39 @@ public class UsersService {
         } catch (AuthenticationException ex) {
 
         }
+        return null;
+    }
+
+    public MessageResponse addEventToUser(String username, Long eventId) {
+        Users userFromDB = usersRepository.findByUsername(username)
+                .orElse(null);
+
+        Event eventFromDB = eventRepository.findById(eventId)
+                .orElse(null);
+
+        if(userFromDB != null && eventFromDB != null) {
+            ///userFromDB.addEvent(eventFromDB);
+            userFromDB.getEvents().add(eventFromDB);
+            userFromDB.updateUser(userFromDB);
+            usersRepository.save(userFromDB);
+            System.out.println(userFromDB.toString());
+            return new MessageResponse(MessageType.SUCCESS, "User %s has been registered to event %s successfully".formatted(username, eventFromDB.eventName()));
+        }
+
+        return new MessageResponse(MessageType.ERROR, "User %s cannot be found".formatted(username));
+    }
+
+    public List<EventQueryResponse> getRegisteredEvents(String username) {
+        Users userFromDB = usersRepository.findByUsername(username)
+                .orElse(null);
+
+        if(userFromDB != null) {
+            return userFromDB.getEvents()
+                    .stream()
+                    .map(EventQueryResponse::new)
+                    .toList();
+        }
+
         return null;
     }
 }

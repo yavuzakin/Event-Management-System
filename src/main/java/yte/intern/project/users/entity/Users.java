@@ -1,6 +1,7 @@
 package yte.intern.project.users.entity;
 
 import lombok.Getter;
+import lombok.ToString;
 import org.springframework.security.core.userdetails.UserDetails;
 import yte.intern.project.common.entity.BaseEntity;
 import yte.intern.project.event.entity.Event;
@@ -30,13 +31,13 @@ public class Users extends BaseEntity implements UserDetails {
     )
     private Set<Authority> authorities;
 
-    /*@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "registered_events",
-            joinColumns = {@JoinColumn(name = "participant_id")},
+            joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "event_id")}
     )
-    private Set<Event> events;*/
+    private Set<Event> events;
 
     protected Users() {
     }
@@ -49,7 +50,8 @@ public class Users extends BaseEntity implements UserDetails {
                  String password,
                  Integer age,
                  UserType userType,
-                 Set<Authority> authorities) {
+                 Set<Authority> authorities,
+                 Set<Event> events) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.ssnNo = ssnNo;
@@ -59,6 +61,7 @@ public class Users extends BaseEntity implements UserDetails {
         this.age = age;
         this.userType = userType;
         this.authorities = authorities;
+        this.events = events;
     }
 
     @Override
@@ -81,7 +84,7 @@ public class Users extends BaseEntity implements UserDetails {
         return true;
     }
 
-    public static Users toUser(RegisterRequest registerRequest, Set<Authority> authorities) {
+    public static Users toUser(RegisterRequest registerRequest, Set<Authority> authorities, Set<Event> events) {
         return new Users(registerRequest.firstName(),
                 registerRequest.lastName(),
                 registerRequest.ssnNo(),
@@ -90,8 +93,25 @@ public class Users extends BaseEntity implements UserDetails {
                 registerRequest.password(),
                 registerRequest.age(),
                 registerRequest.userType(),
-                authorities);
+                authorities,
+                events);
     }
 
+    public void addEvent(Event event) {
+        this.events.add(event);
+    }
+
+    public void updateUser(Users updatedUser) {
+        this.firstName = updatedUser.getFirstName();
+        this.lastName = updatedUser.getLastName();
+        this.ssnNo = updatedUser.getSsnNo();
+        this.email = updatedUser.getEmail();
+        this.username = updatedUser.getUsername();
+        this.password = updatedUser.getPassword();
+        this.age = updatedUser.getAge();
+        this.userType = updatedUser.getUserType();
+        this.authorities = updatedUser.getAuthorities();
+        this.events = updatedUser.getEvents();
+    }
 
 }

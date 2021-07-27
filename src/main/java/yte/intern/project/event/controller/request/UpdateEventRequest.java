@@ -10,6 +10,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Getter
@@ -30,6 +31,6 @@ public class UpdateEventRequest {
     private final Integer eventQuota;
 
     public Event toEvent() {
-        return new Event(eventName, eventStartDate, eventFinishDate, eventQuota);
+        return new Event(eventName, eventStartDate, eventFinishDate, eventQuota, Set.of());
     }
 }

@@ -23,17 +23,18 @@ public class Event extends BaseEntity {
     private LocalDate eventFinishDate;
     private Integer eventQuota;
 
-    /*@ManyToMany(mappedBy = "events")
-    private Set<Users> users;*/
+    @ManyToMany(mappedBy = "events")
+    private Set<Users> users;
 
     protected Event() {
     }
 
-    public Event(String eventName, LocalDate eventStartDate, LocalDate eventFinishDate, Integer eventQuota) {
+    public Event(String eventName, LocalDate eventStartDate, LocalDate eventFinishDate, Integer eventQuota, Set<Users> users) {
         this.eventName = eventName;
         this.eventStartDate = eventStartDate;
         this.eventFinishDate = eventFinishDate;
         this.eventQuota = eventQuota;
+        this.users = users;
     }
 
     public void updateEvent(Event updatedEvent) {

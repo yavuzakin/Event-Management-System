@@ -1,5 +1,6 @@
 package yte.intern.project.event.controller.request;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import yte.intern.project.event.entity.Event;
@@ -9,9 +10,11 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @ToString
+@Getter
 public class AddEventRequest {
 
     @Size(max = 255, message = "Event name cannot exceed 255 characters")
@@ -28,7 +31,7 @@ public class AddEventRequest {
     private final Integer eventQuota;
 
     public Event toEvent() {
-        return new Event(eventName, eventStartDate, eventFinishDate, eventQuota);
+        return new Event(eventName, eventStartDate, eventFinishDate, eventQuota, Set.of());
     }
 
 }

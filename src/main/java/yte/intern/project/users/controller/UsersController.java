@@ -3,6 +3,7 @@ package yte.intern.project.users.controller;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import yte.intern.project.common.dto.MessageResponse;
+import yte.intern.project.event.controller.request.AddEventRequest;
 import yte.intern.project.event.controller.response.EventQueryResponse;
 import yte.intern.project.users.controller.request.LoginRequest;
 import yte.intern.project.users.controller.request.RegisterRequest;
@@ -23,10 +24,7 @@ public class UsersController {
     @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/getAllEvents")
     public List<EventQueryResponse> getAllEvents() {
-        return usersService.getAllEvents()
-                .stream()
-                .map(EventQueryResponse::new)
-                .toList();
+        return usersService.getAllEvents();
     }
 
     @PostMapping("/register")
@@ -37,5 +35,15 @@ public class UsersController {
     @PostMapping("/login")
     public String login(@RequestBody LoginRequest loginRequest) throws Exception {
         return usersService.login(loginRequest);
+    }
+
+    @PostMapping("/addEventToUser/{username}/{eventId}")
+    public MessageResponse addEventToUser(@PathVariable("username") String username, @PathVariable("eventId") Long eventId) {
+        return usersService.addEventToUser(username, eventId);
+    }
+
+    @GetMapping("/getRegisteredEvents/{username}")
+    public List<EventQueryResponse> getRegisteredEvents(@PathVariable String username) {
+        return usersService.getRegisteredEvents(username);
     }
 }
