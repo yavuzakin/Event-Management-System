@@ -24,7 +24,7 @@ public class Event extends BaseEntity {
     private Integer eventQuota;
 
     /*@ManyToMany(mappedBy = "events")
-    private Set<Users> users = new HashSet<>();*/
+    private Set<Users> users;*/
 
     protected Event() {
     }

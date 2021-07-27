@@ -2,54 +2,52 @@ package yte.intern.project.security.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.List;
 
-@Service
 public class JwtUtil {
 
-    private String SECRET_KEY = "secret";
-
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public static String generateToken(Authentication user, String key) {
+        return Jwts.builder()
+                .setSubject(user.getName())
+                .claim("authorities", getAuthorities(user))
+                .setExpiration(getExpirationDate())
+                .signWith(Keys.hmacShaKeyFor(key.getBytes()))
+                .compact();
     }
 
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    private static List<String> getAuthorities(Authentication user) {
+        return user.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
-    }
+    private static Date getExpirationDate() {
+        Instant expirationTime = LocalDate.now()
+                .plusDays(7)
+                .atStartOfDay()
+                .atZone(ZoneId.systemDefault())
+                .toInstant();
 
-    private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        return Date.from(expirationTime);
     }
 
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userDetails.getUsername());
-    }
+    public static String extractUsername(String jwtToken, String secretKey) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                .build()
+                .parseClaimsJws(jwtToken)
+                .getBody();
 
-    private String createToken(Map<String, Object> claims, String subject) {
-
-        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
-    }
-
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return claims.getSubject();
     }
 }
+

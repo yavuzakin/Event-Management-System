@@ -1,5 +1,6 @@
 package yte.intern.project.event.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import yte.intern.project.common.dto.MessageResponse;
 import yte.intern.project.event.controller.request.AddEventRequest;
@@ -11,6 +12,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
+@PreAuthorize("hasAuthority('ADMIN')")
 @RequestMapping("/events")
 public class EventController {
 

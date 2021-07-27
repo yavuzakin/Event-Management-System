@@ -1,15 +1,19 @@
 package yte.intern.project.users.entity;
 
 import lombok.Getter;
+import org.springframework.security.core.userdetails.UserDetails;
 import yte.intern.project.common.entity.BaseEntity;
+import yte.intern.project.event.entity.Event;
+import yte.intern.project.security.domain.Authority;
 import yte.intern.project.users.enums.UserType;
 import yte.intern.project.users.controller.request.RegisterRequest;
 
-import javax.persistence.Entity;
+import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Getter
-public class Users extends BaseEntity {
+public class Users extends BaseEntity implements UserDetails {
     private String firstName;
     private String lastName;
     private String ssnNo;
@@ -18,13 +22,21 @@ public class Users extends BaseEntity {
     private String password;
     private Integer age;
     private UserType userType;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "user_authorities",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "authority_id")
+    )
+    private Set<Authority> authorities;
 
-    /*@ManyToMany
-    @JoinTable(name = "registered_events",
+    /*@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "registered_events",
             joinColumns = {@JoinColumn(name = "participant_id")},
             inverseJoinColumns = {@JoinColumn(name = "event_id")}
     )
-    private Set<Event> events = new HashSet<>();*/
+    private Set<Event> events;*/
 
     protected Users() {
     }
@@ -36,7 +48,8 @@ public class Users extends BaseEntity {
                  String username,
                  String password,
                  Integer age,
-                 UserType userType) {
+                 UserType userType,
+                 Set<Authority> authorities) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.ssnNo = ssnNo;
@@ -45,9 +58,30 @@ public class Users extends BaseEntity {
         this.password = password;
         this.age = age;
         this.userType = userType;
+        this.authorities = authorities;
     }
 
-    public static Users toUser(RegisterRequest registerRequest) {
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public static Users toUser(RegisterRequest registerRequest, Set<Authority> authorities) {
         return new Users(registerRequest.firstName(),
                 registerRequest.lastName(),
                 registerRequest.ssnNo(),
@@ -55,6 +89,9 @@ public class Users extends BaseEntity {
                 registerRequest.username(),
                 registerRequest.password(),
                 registerRequest.age(),
-                registerRequest.userType());
+                registerRequest.userType(),
+                authorities);
     }
+
+
 }

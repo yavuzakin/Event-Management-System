@@ -1,12 +1,9 @@
 package yte.intern.project.users.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import yte.intern.project.common.dto.MessageResponse;
 import yte.intern.project.event.controller.response.EventQueryResponse;
-import yte.intern.project.security.service.CustomUserDetailsService;
-import yte.intern.project.security.util.JwtUtil;
 import yte.intern.project.users.controller.request.LoginRequest;
 import yte.intern.project.users.controller.request.RegisterRequest;
 import yte.intern.project.users.service.UsersService;
@@ -17,21 +14,13 @@ import java.util.List;
 @RequestMapping("/user")
 public class UsersController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
     private final UsersService usersService;
 
     public UsersController(UsersService usersService) {
         this.usersService = usersService;
     }
 
+    @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/getAllEvents")
     public List<EventQueryResponse> getAllEvents() {
         return usersService.getAllEvents()
@@ -45,7 +34,7 @@ public class UsersController {
         return usersService.register(registerRequest);
     }
 
-    @PostMapping("/authenticate")
+    @PostMapping("/login")
     public String login(@RequestBody LoginRequest loginRequest) throws Exception {
         return usersService.login(loginRequest);
     }
