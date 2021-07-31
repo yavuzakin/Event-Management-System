@@ -1,12 +1,15 @@
 package yte.intern.project.event.controller;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import yte.intern.project.common.dto.MessageResponse;
 import yte.intern.project.event.controller.request.AddEventRequest;
 import yte.intern.project.event.controller.request.UpdateEventRequest;
 import yte.intern.project.event.controller.response.EventQueryResponse;
 import yte.intern.project.event.service.EventService;
+import yte.intern.project.users.controller.response.UserQueryResponse;
+import yte.intern.project.users.entity.Users;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -43,5 +46,10 @@ public class EventController {
     @DeleteMapping("/{id}")
     public MessageResponse deleteEvent(@PathVariable Long id) {
         return eventService.deleteEvent(id);
+    }
+
+    @GetMapping("/{id}")
+    public List<UserQueryResponse> getEventParticipants(@PathVariable Long id) {
+        return eventService.getEventParticipants(id);
     }
 }

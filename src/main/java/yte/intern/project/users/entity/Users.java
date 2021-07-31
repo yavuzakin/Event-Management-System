@@ -1,7 +1,6 @@
 package yte.intern.project.users.entity;
 
 import lombok.Getter;
-import lombok.ToString;
 import org.springframework.security.core.userdetails.UserDetails;
 import yte.intern.project.common.entity.BaseEntity;
 import yte.intern.project.event.entity.Event;

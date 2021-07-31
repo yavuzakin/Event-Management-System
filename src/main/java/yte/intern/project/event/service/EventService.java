@@ -5,6 +5,8 @@ import yte.intern.project.common.dto.MessageResponse;
 import yte.intern.project.common.enums.MessageType;
 import yte.intern.project.event.entity.Event;
 import yte.intern.project.event.repository.EventRepository;
+import yte.intern.project.users.controller.response.UserQueryResponse;
+import yte.intern.project.users.entity.Users;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
@@ -72,5 +74,15 @@ public class EventService {
             return new MessageResponse(MessageType.ERROR, "Start date cannot be earlier than today");
         eventRepository.deleteById(id);
         return new MessageResponse(MessageType.SUCCESS, EVENT_DELETED_MESSAGE.formatted(id));
+    }
+
+    public List<UserQueryResponse> getEventParticipants(Long id) {
+        Event eventFromDB = eventRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(EVENT_DOES_NOT_EXIST_MESSAGE.formatted(id)));
+
+        return eventFromDB.users()
+                .stream()
+                .map(UserQueryResponse::new)
+                .toList();
     }
 }
