@@ -1,6 +1,5 @@
 package yte.intern.project.users.service;
 
-import com.google.zxing.WriterException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,7 +10,7 @@ import org.springframework.stereotype.Service;
 import yte.intern.project.common.dto.MessageResponse;
 import yte.intern.project.common.email.SendEmailService;
 import yte.intern.project.common.enums.MessageType;
-import yte.intern.project.common.qrcode.Qrcode;
+import yte.intern.project.common.qrcode.QrcodeGenerator;
 import yte.intern.project.event.controller.response.EventQueryResponse;
 import yte.intern.project.event.entity.Event;
 import yte.intern.project.event.repository.EventRepository;
@@ -26,10 +25,8 @@ import yte.intern.project.users.enums.UserType;
 import yte.intern.project.users.repository.UsersRepository;
 
 import javax.mail.MessagingException;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -50,7 +47,8 @@ public class UsersService {
                         final UsersRepository usersRepository,
                         final EventRepository eventRepository,
                         final AuthorityRepository authorityRepository,
-                        final PasswordEncoder passwordEncoder, SendEmailService sendEmailService) {
+                        final PasswordEncoder passwordEncoder,
+                        final SendEmailService sendEmailService) {
         this.authenticationManager = authenticationManager;
         this.usersRepository = usersRepository;
         this.eventRepository = eventRepository;
@@ -99,12 +97,11 @@ public class UsersService {
             String jwt = JwtUtil.generateToken(authenticatedToken, secretKey);
             return jwt;
         } catch (AuthenticationException ex) {
-
+            return "error";
         }
-        return null;
     }
 
-    public MessageResponse registerToEvent(String username, Long eventId) throws IOException, WriterException, MessagingException {
+    public MessageResponse registerToEvent(String username, Long eventId) throws Exception {
         Users userFromDB = usersRepository.findByUsername(username)
                 .orElse(null);
 
@@ -115,15 +112,15 @@ public class UsersService {
 
             if(eventFromDB.users().size() >= eventFromDB.eventQuota())
                 return new MessageResponse(MessageType.ERROR, "Quota is full!");
-            
+
             userFromDB.getEvents().add(eventFromDB);
             userFromDB.updateUser(userFromDB);
             usersRepository.save(userFromDB);
 
-            Qrcode qrcode = new Qrcode(eventFromDB.eventName(), userFromDB.getFirstName(), userFromDB.getLastName());
-            qrcode.generateQrcode();
+            QrcodeGenerator qrcodeGenerator = new QrcodeGenerator(eventFromDB.eventName(), userFromDB.getFirstName(), userFromDB.getLastName());
+            qrcodeGenerator.generateQrcode();
 
-            //sendEmail(username, eventId);
+            sendEmail(userFromDB, eventFromDB);
 
             return new MessageResponse(MessageType.SUCCESS, "User %s has been registered to event %s successfully".formatted(username, eventFromDB.eventName()));
         }
@@ -182,25 +179,19 @@ public class UsersService {
         return null;
     }
 
-    public MessageResponse sendEmail(String username, Long eventId) throws MessagingException {
-        Users userFromDB = usersRepository.findByUsername(username)
-                .orElse(null);
-        Event eventFromDB = eventRepository.findById(eventId)
-                .orElse(null);
+    public MessageResponse sendEmail(Users userFromDB, Event eventFromDB) throws Exception {
 
-        if(userFromDB != null && eventFromDB != null) {
-            String body = "Dear " + userFromDB.getFirstName() + " " +userFromDB.getLastName() + ", thanks for joining us in the event of " + eventFromDB.eventName() +"!";
-            String imageName = userFromDB.getFirstName() + userFromDB.getLastName() + eventFromDB.eventName();
-            String imagePath = "C:\\Users\\yavuz\\Desktop\\TUBITAK\\Project\\project\\front-end\\public\\%s.jpg".formatted(imageName);
-            //String imagePath = "C:\\Users\\yavuz\\Desktop\\TUBITAK\\Project\\project\\front-end\\public\\YavuzAKINhh.jpg".formatted(imageName);
-            System.out.println(userFromDB.getEmail());
-            try {
-                sendEmailService.sendEmailWithAttachment(userFromDB.getEmail(), body, eventFromDB.eventName(), imagePath);
-                return new MessageResponse(MessageType.SUCCESS, "Mail sent...");
-            } catch (MessagingException err) {
-                System.out.println(err);
-            }
+        String body = "Dear " + userFromDB.getFirstName() + " " +userFromDB.getLastName() + ", thanks for joining us in the event of " + eventFromDB.eventName() +"!";
+        String imageName = userFromDB.getFirstName() + userFromDB.getLastName() + eventFromDB.eventName();
+        String imagePath = "C:\\Users\\yavuz\\Desktop\\TUBITAK\\Project\\project\\front-end\\public\\%s.jpg".formatted(imageName);
+
+        try {
+            sendEmailService.sendEmailWithImage(userFromDB.getEmail(), body, eventFromDB.eventName(), imagePath);
+            return new MessageResponse(MessageType.SUCCESS, "Mail sent...");
+        } catch (MessagingException err) {
+            System.out.println(err);
         }
+
         return new MessageResponse(MessageType.ERROR, "Mail cannot be sent...");
     }
 

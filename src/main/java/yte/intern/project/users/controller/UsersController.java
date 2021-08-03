@@ -13,6 +13,7 @@ import yte.intern.project.users.entity.Users;
 import yte.intern.project.users.service.UsersService;
 
 import javax.mail.MessagingException;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 
@@ -33,17 +34,17 @@ public class UsersController {
     }
 
     @PostMapping("/register")
-    public MessageResponse register(@RequestBody RegisterRequest registerRequest) {
+    public MessageResponse register(@RequestBody @Valid RegisterRequest registerRequest) {
         return usersService.register(registerRequest);
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest loginRequest) throws Exception {
+    public String login(@RequestBody @Valid LoginRequest loginRequest) throws Exception {
         return usersService.login(loginRequest);
     }
 
     @PostMapping("/registerToEvent/{username}/{eventId}")
-    public MessageResponse registerToEvent(@PathVariable("username") String username, @PathVariable("eventId") Long eventId) throws IOException, WriterException, MessagingException {
+    public MessageResponse registerToEvent(@PathVariable("username") String username, @PathVariable("eventId") Long eventId) throws Exception {
         return usersService.registerToEvent(username, eventId);
     }
 
@@ -65,11 +66,6 @@ public class UsersController {
     @GetMapping("/getUserByUsername/{username}")
     public UserQueryResponse getUserByUsername(@PathVariable String username) {
         return usersService.getUserByUsername(username);
-    }
-
-    @PostMapping("sendEmail/{username}/{eventId}")
-    public MessageResponse sendEmail(@PathVariable("username") String username, @PathVariable("eventId") Long eventId) throws MessagingException {
-        return usersService.sendEmail(username, eventId);
     }
 
     @GetMapping("/userCount")

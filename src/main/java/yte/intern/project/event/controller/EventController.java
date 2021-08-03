@@ -9,7 +9,6 @@ import yte.intern.project.event.controller.request.UpdateEventRequest;
 import yte.intern.project.event.controller.response.EventQueryResponse;
 import yte.intern.project.event.service.EventService;
 import yte.intern.project.users.controller.response.UserQueryResponse;
-import yte.intern.project.users.entity.Users;
 
 import javax.validation.Valid;
 import java.util.List;

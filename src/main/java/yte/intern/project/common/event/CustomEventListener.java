@@ -2,7 +2,6 @@ package yte.intern.project.common.event;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.stereotype.Component;
 import yte.intern.project.security.domain.Authority;
 import yte.intern.project.security.repository.AuthorityRepository;

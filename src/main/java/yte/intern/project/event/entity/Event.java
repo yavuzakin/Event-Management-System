@@ -9,7 +9,6 @@ import yte.intern.project.users.entity.Users;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
